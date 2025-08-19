@@ -256,7 +256,23 @@ app.post('/api/usb-token/sign', async (req, res) => {
         await execCommand(signCommand);
 
         if (fs.existsSync(tempSigFile)) {
-            const signatureData = fs.readFileSync(tempSigFile, 'base64');
+            const signatureBuffer = fs.readFileSync(tempSigFile);
+            
+            // Validate signature file is not empty
+            if (signatureBuffer.length === 0) {
+                throw new Error('Signature file is empty - pkcs11-tool signing may have failed');
+            }
+            
+            // Convert to base64 and validate
+            const signatureData = signatureBuffer.toString('base64');
+            
+            // Validate base64 format
+            if (!/^[A-Za-z0-9+/]*={0,2}$/.test(signatureData)) {
+                throw new Error(`Invalid signature data format. Length: ${signatureBuffer.length}, First 50 chars: ${signatureData.substring(0, 50)}`);
+            }
+            
+            log('info', `Generated valid signature: ${signatureBuffer.length} bytes, base64 length: ${signatureData.length}`);
+            
             signatures.push({
                 type: 'taxpayer',
                 algorithm: 'RSA-PKCS',
@@ -264,6 +280,8 @@ app.post('/api/usb-token/sign', async (req, res) => {
                 timestamp: new Date().toISOString()
             });
             cleanupTempFile(tempSigFile);
+        } else {
+            throw new Error('Signature file was not created by pkcs11-tool');
         }
 
         // Generate intermediary signature if needed
@@ -276,7 +294,23 @@ app.post('/api/usb-token/sign', async (req, res) => {
             await execCommand(intermediarySignCommand);
             
             if (fs.existsSync(tempSigFile)) {
-                const signatureData = fs.readFileSync(tempSigFile, 'base64');
+                const signatureBuffer = fs.readFileSync(tempSigFile);
+                
+                // Validate signature file is not empty
+                if (signatureBuffer.length === 0) {
+                    throw new Error('Intermediary signature file is empty - pkcs11-tool signing may have failed');
+                }
+                
+                // Convert to base64 and validate
+                const signatureData = signatureBuffer.toString('base64');
+                
+                // Validate base64 format
+                if (!/^[A-Za-z0-9+/]*={0,2}$/.test(signatureData)) {
+                    throw new Error(`Invalid intermediary signature data format. Length: ${signatureBuffer.length}, First 50 chars: ${signatureData.substring(0, 50)}`);
+                }
+                
+                log('info', `Generated valid intermediary signature: ${signatureBuffer.length} bytes, base64 length: ${signatureData.length}`);
+                
                 signatures.push({
                     type: 'intermediary',
                     algorithm: 'RSA-PKCS',
@@ -284,6 +318,8 @@ app.post('/api/usb-token/sign', async (req, res) => {
                     timestamp: new Date().toISOString()
                 });
                 cleanupTempFile(tempSigFile);
+            } else {
+                throw new Error('Intermediary signature file was not created by pkcs11-tool');
             }
         }
 
