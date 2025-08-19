@@ -237,16 +237,21 @@ app.post('/api/usb-token/sign', async (req, res) => {
 
         log('info', `Signing data for ${submission_type} submission`);
 
-        // Create temporary file for data to sign
-        tempDataFile = generateTempFilename('.json');
-        fs.writeFileSync(tempDataFile, JSON.stringify(data, null, 2));
+        // Create hash of the data to sign (ePass2003 works better with hashes)
+        const dataToSign = JSON.stringify(data, null, 2);
+        const dataHash = crypto.createHash('sha256').update(dataToSign, 'utf8').digest();
+        
+        // Create temporary file for hash to sign
+        tempDataFile = generateTempFilename('.bin');
+        fs.writeFileSync(tempDataFile, dataHash);
 
         const signatures = [];
 
         // Generate taxpayer signature (always required)
-        log('info', 'Generating taxpayer signature');
+        log('info', 'Generating taxpayer signature for ePass2003');
         tempSigFile = generateTempFilename('.sig');
         
+        // Use RSA-PKCS mechanism with hash input for ePass2003
         const signCommand = `pkcs11-tool --module ${config.pkcs11Module} --login --pin ${pin} --sign --mechanism RSA-PKCS --input-file ${tempDataFile} --output-file ${tempSigFile}`;
         await execCommand(signCommand);
 
@@ -263,11 +268,12 @@ app.post('/api/usb-token/sign', async (req, res) => {
 
         // Generate intermediary signature if needed
         if (submission_type === 'intermediary') {
-            log('info', 'Generating intermediary signature');
+            log('info', 'Generating intermediary signature for ePass2003');
             tempSigFile = generateTempFilename('.sig');
             
-            // For intermediary, we might use a different certificate or mechanism
-            await execCommand(signCommand.replace(tempSigFile, tempSigFile));
+            // Use the same hash-based signing for intermediary
+            const intermediarySignCommand = `pkcs11-tool --module ${config.pkcs11Module} --login --pin ${pin} --sign --mechanism RSA-PKCS --input-file ${tempDataFile} --output-file ${tempSigFile}`;
+            await execCommand(intermediarySignCommand);
             
             if (fs.existsSync(tempSigFile)) {
                 const signatureData = fs.readFileSync(tempSigFile, 'base64');
