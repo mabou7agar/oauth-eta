@@ -251,8 +251,10 @@ app.post('/api/usb-token/sign', async (req, res) => {
         log('info', 'Generating taxpayer signature for ePass2003');
         tempSigFile = generateTempFilename('.sig');
         
-        // Use RSA-PKCS mechanism with hash input for ePass2003
-        const signCommand = `pkcs11-tool --module ${config.pkcs11Module} --login --pin ${pin} --sign --mechanism RSA-PKCS --input-file ${tempDataFile} --output-file ${tempSigFile}`;
+        // Generate CADES-BES compliant signature for ETA
+        // ETA requires CADES-BES ASN.1 encoded signatures, not raw RSA signatures
+        // Use SHA256-RSA-PKCS mechanism to generate CADES-BES compatible signatures
+        const signCommand = `pkcs11-tool --module ${config.pkcs11Module} --login --pin ${pin} --sign --mechanism SHA256-RSA-PKCS --input-file ${tempDataFile} --output-file ${tempSigFile}`;
         await execCommand(signCommand);
 
         if (fs.existsSync(tempSigFile)) {
