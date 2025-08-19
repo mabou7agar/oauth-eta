@@ -34,9 +34,11 @@ $env:LOG_LEVEL = "info"
 
 # Try to find PKCS#11 library in common Windows locations
 $pkcs11Paths = @(
-    "C:\Windows\System32\opensc-pkcs11.dll",
     "C:\Program Files\OpenSC Project\OpenSC\pkcs11\opensc-pkcs11.dll",
-    "C:\Program Files (x86)\OpenSC Project\OpenSC\pkcs11\opensc-pkcs11.dll"
+    "C:\Program Files (x86)\OpenSC Project\OpenSC\pkcs11\opensc-pkcs11.dll",
+    "C:\Windows\System32\opensc-pkcs11.dll",
+    "C:\Program Files\OpenSC Project\OpenSC\pkcs11\onepin-opensc-pkcs11.dll",
+    "C:\Program Files (x86)\OpenSC Project\OpenSC\pkcs11\onepin-opensc-pkcs11.dll"
 )
 
 $pkcs11Found = $false

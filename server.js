@@ -22,8 +22,12 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Configuration
+const defaultPkcs11Module = process.platform === 'win32' 
+    ? 'C:\\Program Files\\OpenSC Project\\OpenSC\\pkcs11\\opensc-pkcs11.dll'
+    : '/usr/lib/opensc-pkcs11.so';
+
 const config = {
-    pkcs11Module: process.env.PKCS11_MODULE || '/usr/lib/opensc-pkcs11.so',
+    pkcs11Module: process.env.PKCS11_MODULE || defaultPkcs11Module,
     tempDir: path.join(__dirname, 'temp'),
     logLevel: process.env.LOG_LEVEL || 'info'
 };
