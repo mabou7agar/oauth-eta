@@ -2,7 +2,6 @@ version: '3.8'
 
 services:
   # USB Token Server - Main service for handling USB token operations
-  # Optimized for Odoo ERP integration
   usb-token-server:
     build:
       context: .
@@ -13,7 +12,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - CORS_ORIGIN=http://localhost:8069,http://host.docker.internal:8069,*  # Odoo default ports
+      - CORS_ORIGIN=http://localhost:8000
       - LOG_LEVEL=info
       - USB_TOKEN_TIMEOUT=30000
       - MAX_CONCURRENT_OPERATIONS=5
@@ -56,22 +55,21 @@ services:
       timeout: 10s
       retries: 3
 
-  # Nginx Reverse Proxy (Optional - only needed for external/production deployments)
-  # Commented out since server runs in local network
-  # nginx-proxy:
-  #   image: nginx:alpine
-  #   container_name: eta-nginx-proxy
-  #   ports:
-  #     - "2345:80"  # ETA_USB_TOKEN_PROXY_PORT
-  #   volumes:
-  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
-  #   depends_on:
-  #     - usb-token-server
-  #   restart: unless-stopped
-  #   networks:
-  #     - eta-network
-  #   profiles:
-  #     - proxy  # Only start with --profile proxy
+  # Nginx Reverse Proxy (Optional - for load balancing multiple token servers)
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: eta-nginx-proxy
+    ports:
+      - "2345:80"  # ETA_USB_TOKEN_PROXY_PORT
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - usb-token-server
+    restart: unless-stopped
+    networks:
+      - eta-network
+    profiles:
+      - proxy  # Only start with --profile proxy
 
   # Monitoring with Prometheus (Optional)
   prometheus:
