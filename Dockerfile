@@ -18,8 +18,8 @@ RUN apk add --no-cache \
 # Copy package files
 COPY package*.json ./
 
-# Install Node.js dependencies
-RUN npm ci --only=production
+# Install Node.js dependencies (including dev dependencies for nodemon)
+RUN npm ci
 
 # Copy application files
 COPY . .
