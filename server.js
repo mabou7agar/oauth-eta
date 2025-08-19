@@ -23,11 +23,19 @@ app.use(express.urlencoded({ extended: true }));
 
 // Configuration
 const defaultPkcs11Module = process.platform === 'win32' 
-    ? 'C:\\Program Files\\OpenSC Project\\OpenSC\\pkcs11\\opensc-pkcs11.dll'
+    ? 'C:\\Windows\\System32\\eps2003csp11.dll'  // ePass2003 PKCS#11 library (FOUND!)
     : '/usr/lib/opensc-pkcs11.so';
 
+// Fallback PKCS#11 modules for Windows
+const fallbackPkcs11Modules = [
+    'C:\\Windows\\System32\\eps2003csp11.dll',   // ePass2003 (primary)
+    'C:\\Program Files\\OpenSC Project\\OpenSC\\pkcs11\\opensc-pkcs11.dll', // OpenSC
+    'C:\\Windows\\System32\\opensc-pkcs11.dll'   // OpenSC system location
+];
+
 const config = {
-    pkcs11Module: process.env.PKCS11_MODULE || defaultPkcs11Module,
+    pkcs11Module: process.env.PKCS11_MODULE || process.env.ETA_USB_TOKEN_PKCS11_LIB || defaultPkcs11Module,
+    fallbackModules: process.platform === 'win32' ? fallbackPkcs11Modules : [],
     tempDir: path.join(__dirname, 'temp'),
     logLevel: process.env.LOG_LEVEL || 'info'
 };

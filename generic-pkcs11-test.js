@@ -9,9 +9,9 @@ const path = require('path');
 // Alternative PKCS#11 libraries to try
 const alternativeLibraries = [
     process.env.ETA_USB_TOKEN_PKCS11_LIB,        // User-specified library
-    'eps2003cps11.dll',                          // ePass2003 PKCS#11 (found!)
-    'C:\\Windows\\System32\\eps2003cps11.dll',   // ePass2003 system location
-    'C:\\Program Files\\ePass2003\\eps2003cps11.dll', // ePass2003 program files
+    'C:\\Windows\\System32\\eps2003csp11.dll',   // ePass2003 PKCS#11 (FOUND!)
+    'eps2003csp11.dll',                          // ePass2003 PKCS#11 (relative)
+    'C:\\Program Files\\ePass2003\\eps2003csp11.dll', // ePass2003 program files
     'C:\\Windows\\System32\\opensc-pkcs11.dll',  // OpenSC (open source)
     'C:\\Program Files\\OpenSC Project\\OpenSC\\pkcs11\\opensc-pkcs11.dll',
     'C:\\Windows\\System32\\msclmd.dll',         // Microsoft Smart Card Base CSP
