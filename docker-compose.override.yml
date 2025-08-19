@@ -1,0 +1,26 @@
+# Docker Compose Override for Development
+# =====================================
+# This file provides development-specific overrides
+# Use: docker-compose -f docker-compose.yml -f docker-compose.override.yml up
+
+version: '3.8'
+
+services:
+  usb-token-server:
+    environment:
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+    volumes:
+      # Mount source code for development
+      - .:/app
+      - /app/node_modules  # Prevent overwriting node_modules
+    command: ["npm", "run", "dev"]  # Use nodemon for development
+    ports:
+      - "3000:3000"
+      - "9229:9229"  # Node.js debugger port
+
+  # Override Redis for development (no password)
+  redis-cache:
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
