@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Configuration
 const config = {
-    pkcs11Module: process.env.PKCS11_MODULE || '/usr/lib/x86_64-linux-gnu/opensc-pkcs11.so',
+    pkcs11Module: process.env.PKCS11_MODULE || '/usr/lib/opensc-pkcs11.so',
     tempDir: path.join(__dirname, 'temp'),
     logLevel: process.env.LOG_LEVEL || 'info'
 };
